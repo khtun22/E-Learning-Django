@@ -1,0 +1,23 @@
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
+<p class="h2">Login</p>
+<form id="login_form" action="/accounts/login/" method="post" class="form">
+    {% csrf_token %}
+
+    {% if message %}
+    <p style="color: red;">{{ message }}</p>
+    {% endif %}
+
+    <p>Username: <input type="text" name="username" value="" size="50" /></p>
+    <p>Password: <input type="password" name="password" value="" size="50" /></p>
+
+    {% bootstrap_button button_type="submit" content="Submit" %}
+</form>
+
+<br />
+<br />
+<p>Not a user? <a href="/register/">Create new account</a></p>
+{% endblock %}

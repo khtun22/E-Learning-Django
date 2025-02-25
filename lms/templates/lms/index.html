@@ -1,0 +1,37 @@
+{% extends "./base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block content%}
+
+<p class="h3">Welcome, {{ username }}!</p>
+
+<!-- Show profile update warning if necessary -->
+{% if profile_update_message %}
+    <div class="alert alert-warning">
+        {{ profile_update_message }} <a href="{% if account_type == 'S' %}/student_profile/{% else %}/teacher_profile/{% endif %}" class="alert-link">Update Profile</a>
+    </div>
+{% endif %}
+
+<!-- For students: list of enrolled courses -->
+{% if enrolled_courses %}
+<br /><br />
+<p class="h5">Courses you enrolled in:</p>
+    <ul class="list-group">
+        {% for course in enrolled_courses %}
+            <li class="list-group-item">{{ course }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!-- For teachers: list of courses taught -->
+{% if taught_courses %}
+<br /><br />
+<p class="h5">Courses you teach:</p>
+    <ul class="list-group">
+        {% for course in taught_courses %}
+            <li class="list-group-item">{{ course }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

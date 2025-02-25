@@ -1,0 +1,22 @@
+<!-- Chat room selection pages -->
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Chat{% endblock %}
+{% block content %}
+    Which subject chat room would you like to enter?<br>
+    <select class="form-select" id="room-name-select" name="room_name">
+        {% for room in chat_rooms %}
+            <option value="{{ room }}">{{ room }}</option>
+        {% endfor %}
+    </select><br>
+    <button id="room-name-submit" type="button" class="btn btn-primary">Enter</button>
+
+    <script>
+        document.querySelector('#room-name-select').focus();
+        document.querySelector('#room-name-submit').onclick = function(e) {
+            var roomName = document.querySelector('#room-name-select').value;
+            window.location.pathname = '/chat/' + roomName + '/';
+        };
+    </script>
+{% endblock %}

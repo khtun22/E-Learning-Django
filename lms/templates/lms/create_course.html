@@ -1,0 +1,17 @@
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Create Course{% endblock %}
+{% block content%}
+
+
+<div class="container">
+    <p class="h3">Create a New Course</p>
+    <form action="/create_course/" method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% bootstrap_button button_type="submit" content="Create Course" %}
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends './base.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}Account Creation{% endblock %}
+{% block content %}
+        <p class="h2">Create Account</p>
+
+        {% if registered %}
+        <p>Account Created.&nbsp;<a href="/accounts/login/">Login</a></p>
+        {% else %}
+        <form action="/register/" method="post" enctype="multipart/form-data" class="form">
+            {% csrf_token %}
+
+            {{ user_form.as_p }}
+            {{ role_form.as_p}}
+
+            {% bootstrap_button button_type="submit" content="Register" %}
+        </form>
+        {% endif %}
+{% endblock %}

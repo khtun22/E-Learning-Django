@@ -1,0 +1,16 @@
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Teacher Profile{% endblock %}
+{% block content%}
+
+<div class="container">
+    <form action="/teacher_profile/" method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% bootstrap_button button_type="submit" content="Update" %}
+    </form>
+    
+</div>
+
+{% endblock %}
