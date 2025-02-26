@@ -26,14 +26,20 @@ class TeacherForm(forms.ModelForm):
 
 
 class CourseForm(forms.ModelForm):
-    startdate = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        input_formats=['%Y-%m-%d']
+    startdate = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Feb -2024 to Oct -2024'}),
+        required=False
     )
 
     class Meta:
         model = Course
         fields = ['name', 'description', 'startdate']
+
+class CourseMaterialForm(forms.ModelForm):
+    class Meta:
+        model = Course_Material
+        fields = ['file']
+
 
 
 

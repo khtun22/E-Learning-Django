@@ -1,0 +1,49 @@
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Course Enrollment{% endblock %}
+
+{% block content %}
+<div class="container">
+    <p class="h3">Available Courses</p>
+    <ul class="list-group">
+        {% for course in courses %}
+        <li class="list-group-item">
+            <!-- Course Name, Teacher, and Date in one row -->
+            <div class="d-flex justify-content-between align-items-center">
+                <strong>{{ course.name }}</strong> - {{ course.teacher.display_name }} - {{ course.startdate }}
+                <button class="btn btn-success enroll-btn" data-course-id="{{ course.id }}">Enroll</button>
+            </div>
+            <!-- Description directly below the course name -->
+            <p class="mt-2 text-muted">{{ course.description }}</p>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">No courses available for enrollment.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+document.querySelectorAll('.enroll-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const courseId = this.getAttribute('data-course-id');
+        if (confirm('Do you want to enroll in this course?')) {
+            fetch(`/enroll_course/${courseId}/`, { 
+                method: 'POST', 
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' } 
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('You have successfully enrolled.');
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+});
+</script>
+{% endblock %}

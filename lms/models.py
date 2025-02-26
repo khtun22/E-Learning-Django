@@ -35,7 +35,7 @@ class Student(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
-    startdate = models.DateField(null=True, blank=True)  # New field
+    startdate = models.CharField(max_length=50, null=True, blank=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -45,6 +45,7 @@ class Course_Student(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     student_feedback = models.TextField(null=True, blank=True)
+    blocked = models.BooleanField(default=False)
 
     def __str__(self):
         return f'[{self.course.name}]-[{self.student.display_name}]'
@@ -52,8 +53,8 @@ class Course_Student(models.Model):
 class Course_Material(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    file = models.FileField(upload_to='course_materials/')  # New model
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(upload_to='course_materials/')  # File upload
+    uploaded_at = models.DateTimeField(auto_now_add=True)  # Auto set upload time
 
     def __str__(self):
         return self.title

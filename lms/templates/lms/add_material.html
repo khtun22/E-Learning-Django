@@ -1,0 +1,29 @@
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Add Course Material{% endblock %}
+
+{% block content %}
+<div class="container">
+    <p class="h3">Upload Material for {{ course.name }}</p>
+
+    <!-- List of uploaded materials -->
+    <ul class="list-group mt-3">
+        {% for material in materials %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{{ material.file.url }}" target="_blank">{{ material.file.name }}</a>
+                <span class="text-muted">{{ material.uploaded_at }}</span>
+            </li>
+        {% empty %}
+            <li class="list-group-item text-muted">No materials uploaded yet.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Upload form -->
+    <form action="" method="post" enctype="multipart/form-data" class="form mt-4">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% bootstrap_button button_type="submit" content="Upload File" %}
+    </form>
+</div>
+{% endblock %}

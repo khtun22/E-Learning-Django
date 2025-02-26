@@ -1,0 +1,106 @@
+{% extends "./base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Enrolled Students{% endblock %}
+
+{% block content %}
+<div class="container">
+    <p class="h3">Enrolled Students for {{ course.name }}</p>
+
+    <!-- List of Non-Blocked Students -->
+    <ul class="list-group mt-3">
+        {% for enrollment in enrolled_students %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ enrollment.student.display_name }}</strong>
+                    <button class="btn btn-link text-primary" data-bs-toggle="collapse" data-bs-target="#status{{ enrollment.student.id }}">
+                        Show Status
+                    </button>
+                    <div id="status{{ enrollment.student.id }}" class="collapse mt-2">
+                        <p class="text-muted">{{ enrollment.student.status }}</p>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-danger btn-sm remove-btn" data-student-id="{{ enrollment.student.id }}" data-course-id="{{ course.id }}">Remove</button>
+                    <button class="btn btn-dark btn-sm block-btn" data-student-id="{{ enrollment.student.id }}" data-course-id="{{ course.id }}">Block</button>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item text-muted">No students have enrolled yet.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- List of Blocked Students (Shown Separately) -->
+    {% if blocked_students %}
+    <br />
+    <p class="h5 text-danger">Blocked Students</p>
+    <ul class="list-group mt-3">
+        {% for enrollment in blocked_students %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <strong class="text-muted">{{ enrollment.student.display_name }}</strong>
+                <button class="btn btn-success btn-sm unblock-btn" data-student-id="{{ enrollment.student.id }}" data-course-id="{{ course.id }}">Unblock</button>
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.remove-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const studentId = this.getAttribute('data-student-id');
+        const courseId = this.getAttribute('data-course-id');
+        if (confirm('Are you sure you want to remove this student from the course?')) {
+            fetch(`/remove_student/${courseId}/${studentId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Student removed successfully.');
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+    });
+});
+
+document.querySelectorAll('.block-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const studentId = this.getAttribute('data-student-id');
+        const courseId = this.getAttribute('data-course-id');
+        if (confirm('Are you sure you want to block this student? They will not be able to re-enroll.')) {
+            fetch(`/block_student/${courseId}/${studentId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Student blocked successfully.');
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+    });
+});
+
+document.querySelectorAll('.unblock-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const studentId = this.getAttribute('data-student-id');
+        const courseId = this.getAttribute('data-course-id');
+        if (confirm('Are you sure you want to unblock this student?')) {
+            fetch(`/unblock_student/${courseId}/${studentId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Student unblocked successfully.');
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

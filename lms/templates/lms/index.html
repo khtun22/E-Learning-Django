@@ -15,23 +15,45 @@
 <!-- For students: list of enrolled courses -->
 {% if enrolled_courses %}
 <br /><br />
-<p class="h5">Courses you enrolled in:</p>
-    <ul class="list-group">
-        {% for course in enrolled_courses %}
-            <li class="list-group-item">{{ course }}</li>
-        {% endfor %}
-    </ul>
+<p class="h5">Your Enrolled Courses:</p>
+<ul class="list-group">
+    {% for course in enrolled_courses %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ course.name }} - {{ course.teacher.display_name }} - {{ course.startdate }}
+            <div>
+                <a href="{% url 'course_materials' course.id %}" class="btn btn-primary btn-sm">View</a>
+                <a href="{% url 'course_feedback' course.id %}" class="btn btn-warning btn-sm">Feedback</a>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item text-muted">No enrolled courses available.</li>
+    {% endfor %}
+</ul>
 {% endif %}
+
+
 
 <!-- For teachers: list of courses taught -->
 {% if taught_courses %}
 <br /><br />
-<p class="h5">Courses you teach:</p>
-    <ul class="list-group">
-        {% for course in taught_courses %}
-            <li class="list-group-item">{{ course }}</li>
-        {% endfor %}
-    </ul>
+<p class="h5">Courses You Teach:</p>
+<ul class="list-group">
+    {% for course in taught_courses %}
+        <li class="list-group-item">
+            <!-- Course Name and Date -->
+            <div class="d-flex justify-content-between align-items-center">
+                <span><strong>{{ course.name }}</strong> - {{ course.startdate }}</span>
+                <div>
+                    <a href="{% url 'add_material' course.id %}" class="btn btn-success btn-sm">Add File</a>
+                    <a href="{% url 'course_enrollment_list' course.id %}" class="btn btn-primary btn-sm">View</a>
+                </div>
+            </div>
+        </li>
+    {% endfor %}
+</ul>
 {% endif %}
+
+
+
 
 {% endblock %}
