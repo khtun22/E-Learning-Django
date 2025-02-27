@@ -1,0 +1,67 @@
+{% extends "lms/base.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="mb-4">Search Students & Teachers</h3>
+
+    <form method="get" action="{% url 'search' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search by name, status, or bio..." 
+                   value="{{ query }}">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+        <div class="mt-2">
+            <label class="form-check-inline">
+                <input type="radio" name="search_type" value="student" {% if search_type == 'student' %}checked{% endif %} onchange="this.form.submit()"> Students
+            </label>
+            <label class="form-check-inline">
+                <input type="radio" name="search_type" value="teacher" {% if search_type == 'teacher' %}checked{% endif %} onchange="this.form.submit()"> Teachers
+            </label>
+        </div>
+    </form>
+
+    {% if search_type == "student" %}
+        <h5>Students</h5>
+        <div class="row">
+            {% for student in students %}
+                <div class="col-md-4 d-flex align-items-center mb-3">
+                    <img src="{% if student.photo %}{{ student.photo.url }}{% else %}{% static 'lms/profile_pics/default-profile.png' %}{% endif %}" 
+                         class="rounded-circle me-3" width="60" height="60" alt="Student Profile">
+                    <div>
+                        <p class="mb-0"><strong>{{ student.display_name }}</strong></p>
+                        {% if student.status %}
+                            <p class="text-muted small">{{ student.status }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">No students found.</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if search_type == "teacher" %}
+        <h5>Teachers</h5>
+        <div class="row">
+            {% for teacher in teachers %}
+                <div class="col-md-4 d-flex align-items-center mb-3">
+                    <img src="{% if teacher.photo %}{{ teacher.photo.url }}{% else %}{% static 'lms/profile_pics/default-profile.png' %}{% endif %}" 
+                         class="rounded-circle me-3" width="60" height="60" alt="Teacher Profile">
+                    <div>
+                        <p class="mb-0"><strong>{{ teacher.display_name }}</strong></p>
+                        {% if teacher.bio %}
+                            <p class="text-muted small">{{ teacher.bio }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">No teachers found.</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

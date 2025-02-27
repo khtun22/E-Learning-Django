@@ -5,37 +5,268 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
 
-    {% if user.is_authenticated %}
+      {% if user.is_authenticated %}
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+          <div class="container-fluid">
+              <a class="navbar-brand">
+                  <img src="{% static 'lms/logo.png' %}" style="padding: 0px 5px"> 
+                  eLearning System ({{ user.get_username }})
+              </a>
 
-      <a class="navbar-brand"><img src="{% static 'lms/logo.png' %}" style="padding: 0px 5px">eLearning System ({{ user.get_username }})</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                  data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" 
+                  aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+              </button>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/">Home</a>
-          </li>
-          {% if account_type == 'S' %}{% include './navbar_student.html' %}{% endif %}
-          {% if account_type == 'T' %}{% include './navbar_teacher.html' %}{% endif %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              User
-            </a>
-            <ul class="dropdown-menu">
-              {% if account_type == 'S' %}<li><a class="dropdown-item" href="/student_profile/">Profile</a></li>{% endif %}
-              {% if account_type == 'T' %}<li><a class="dropdown-item" href="/teacher_profile/">Profile</a></li>{% endif %}
-              <li><a class="dropdown-item" href="/logout">Logout</a></li>
-            </ul>
-          </li>
-        </ul>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                      <li class="nav-item">
+                          <a class="nav-link active" aria-current="page" href="/">Home</a>
+                      </li>
+                      {% if account_type == 'S' %}
+                          {% include './navbar_student.html' %}
+                      {% elif account_type == 'T' %}
+                          {% include './navbar_teacher.html' %}
+                      {% endif %}
+                      
+                      <!-- User Dropdown -->
+                      <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle" href="#" role="button" 
+                              data-bs-toggle="dropdown" aria-expanded="false">
+                              User
+                          </a>
+                          <ul class="dropdown-menu">
+                              {% if account_type == 'S' %}
+                                  <li><a class="dropdown-item" href="/student_profile/">Profile</a></li>
+                              {% elif account_type == 'T' %}
+                                  <li><a class="dropdown-item" href="/teacher_profile/">Profile</a></li>
+                              {% endif %}
+                              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                          </ul>
+                      </li>
+                      
+                      <!-- Student Notifications -->
+                      {% if account_type == 'S' %}
+                      <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle position-relative" href="#" 
+                              role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="fas fa-bell"></i> Notifications 
+                              <span class="badge bg-danger" id="student-notification-badge">
+                                  {{ student_unread_notifications.count }}
+                              </span>
+                          </a>
+                          <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg" 
+                              id="student-notification-list" 
+                              style="width: 350px; max-height: 400px; overflow-y: auto;">
+                              {% for notification in student_unread_notifications %}
+                                  <li class="dropdown-item d-flex align-items-start">
+                                      <div class="text-truncate" style="max-width: 280px;">
+                                          <small>{{ notification.message }}</small>
+                                      </div>
+                                      <a href="{% url 'mark_student_notification_as_read' notification.id %}" 
+                                          class="btn btn-sm btn-primary ms-2">✔</a>
+                                  </li>
+                              {% empty %}
+                                  <li class="dropdown-item text-muted text-center no-notifications">
+                                      No new notifications
+                                  </li>
+                              {% endfor %}
+                          </ul>
+                      </li>
+                      {% endif %}
 
-      {% else %}
+                      <!-- Teacher Notifications -->
+                      {% if account_type == 'T' %}
+                      <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle position-relative" href="#" 
+                              role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="fas fa-bell"></i> Notifications 
+                              <span class="badge bg-danger" id="notification-badge">
+                                  {{ unread_notifications.count }}
+                              </span>
+                          </a>
+                          <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg" 
+                              id="notification-list" 
+                              style="width: 350px; max-height: 400px; overflow-y: auto;">
+                              {% for notification in unread_notifications %}
+                                  <li class="dropdown-item d-flex align-items-start">
+                                      <div class="text-truncate" style="max-width: 280px;">
+                                          <small>{{ notification.message }}</small>
+                                      </div>
+                                      <a href="{% url 'mark_notification_as_read' notification.id %}" 
+                                          class="btn btn-sm btn-primary ms-2">✔</a>
+                                  </li>
+                              {% empty %}
+                                  <li class="dropdown-item text-muted text-center no-notifications">
+                                      No new notifications
+                                  </li>
+                              {% endfor %}
+                          </ul>
+                      </li>
+                      {% endif %}
 
-      <a class="navbar-brand"><img src="{% static 'lms/logo.png' %}" style="padding: 0px 5px">eLearning System</a>
-
+                  </ul>
+              </div>
+          </div>
+      </nav>
       {% endif %}
-      
+
+  
+      <style>
+        #notification-list {
+            width: 350px;  /* Set width for notification box */
+            max-height: 400px;  /* Prevent overflowing, allow scrolling */
+            overflow-y: auto;  /* Enable scrolling for many notifications */
+            word-wrap: break-word;
+            white-space: normal;
+        }
+    
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    
+        .dropdown-item .text-truncate {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+        }
+      </style>
+    
     </div>
-  </nav>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          const userId = "{{ user.id|default:'0' }}".trim();
+          const accountType = "{{ account_type|default:'' }}";  // Get user role
+      
+          if (!userId || userId === "0" || userId === "None") {
+              console.error("WebSocket Error: Invalid User ID");
+              return;
+          }
+      
+          function removeNoNotificationMessage(listId) {
+              const noNotificationItem = document.querySelector(`#${listId} .no-notifications`);
+              if (noNotificationItem) {
+                  noNotificationItem.remove();
+              }
+          }
+      
+          function attachMarkReadEvents() {
+              document.querySelectorAll(".mark-read").forEach(button => {
+                  button.onclick = function () {
+                      const notificationId = this.dataset.id;
+                      const url = this.dataset.url;
+      
+                      fetch(url, { method: "POST" })
+                          .then(response => response.json())
+                          .then(data => {
+                              if (data.success) {
+                                  this.parentElement.remove();
+                                  updateNotificationBadge();
+                              }
+                          })
+                          .catch(error => console.error("Error marking notification as read:", error));
+                  };
+              });
+          }
+      
+          function updateNotificationBadge() {
+              const studentBadge = document.getElementById("student-notification-badge");
+              const teacherBadge = document.getElementById("notification-badge");
+      
+              if (studentBadge) {
+                  let count = document.querySelectorAll("#student-notification-list .dropdown-item").length;
+                  studentBadge.innerText = count > 0 ? count : "";
+              }
+      
+              if (teacherBadge) {
+                  let count = document.querySelectorAll("#notification-list .dropdown-item").length;
+                  teacherBadge.innerText = count > 0 ? count : "";
+              }
+          }
+      
+          function handleNewNotification(data, listId, badgeId) {
+              removeNoNotificationMessage(listId);
+      
+              const newNotification = document.createElement("li");
+              newNotification.classList.add("dropdown-item", "d-flex", "justify-content-between");
+      
+              newNotification.innerHTML = `
+                  <span>${data.message}</span>
+                  <button class="btn btn-sm btn-primary ms-2 mark-read" data-id="${data.id}" data-url="${data.url}">✔</button>
+              `;
+      
+              document.getElementById(listId).prepend(newNotification);
+              updateNotificationBadge();
+              attachMarkReadEvents();
+      
+              // Auto-reload the page when a new notification arrives
+              setTimeout(() => {
+                  location.reload();
+              }, 2000);  // Reloads after 2 seconds
+          }
+      
+          if (accountType === "S") {  // Student WebSocket
+              const notificationList = document.getElementById("student-notification-list");
+              const notificationBadge = document.getElementById("student-notification-badge");
+      
+              console.log(`WebSocket attempting to connect for Student ID: ${userId}`);
+      
+              const socket = new WebSocket(`ws://${window.location.host}/ws/notifications/student/${userId}/`);
+      
+              socket.onopen = function () {
+                  console.log(`WebSocket connected for Student ID: ${userId}`);
+              };
+      
+              socket.onmessage = function (event) {
+                  const data = JSON.parse(event.data);
+                  handleNewNotification(data, "student-notification-list", "student-notification-badge");
+              };
+      
+              socket.onerror = function (error) {
+                  console.error("WebSocket Error:", error);
+              };
+      
+              socket.onclose = function (event) {
+                  console.log(`WebSocket closed for student with code: ${event.code}`);
+              };
+      
+              attachMarkReadEvents();
+          }
+      
+          if (accountType === "T") {  // Teacher WebSocket
+              const notificationList = document.getElementById("notification-list");
+              const notificationBadge = document.getElementById("notification-badge");
+      
+              console.log(`WebSocket attempting to connect for Teacher ID: ${userId}`);
+      
+              const socket = new WebSocket(`ws://${window.location.host}/ws/notifications/${userId}/`);
+      
+              socket.onopen = function () {
+                  console.log(`WebSocket connected for Teacher ID: ${userId}`);
+              };
+      
+              socket.onmessage = function (event) {
+                  const data = JSON.parse(event.data);
+                  handleNewNotification(data, "notification-list", "notification-badge");
+              };
+      
+              socket.onerror = function (error) {
+                  console.error("WebSocket Error:", error);
+              };
+      
+              socket.onclose = function (event) {
+                  console.log(`WebSocket closed for teacher with code: ${event.code}`);
+              };
+      
+              attachMarkReadEvents();
+          }
+      });
+      </script>
+      
+      
+      
+</nav>

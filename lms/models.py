@@ -58,3 +58,21 @@ class Course_Material(models.Model):
 
     def __str__(self):
         return self.title
+
+class Notification(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification for {self.teacher.display_name} - {self.message[:30]}'
+
+class StudentNotification(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification for {self.student.display_name} - {self.message[:30]}'

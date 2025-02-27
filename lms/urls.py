@@ -17,10 +17,13 @@ urlpatterns = [
     path('block_student/<int:course_id>/<int:student_id>/', views.block_student, name='block_student'),
     path('unblock_student/<int:course_id>/<int:student_id>/', views.unblock_student, name='unblock_student'),
 
+    path('mark_notification_as_read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),
+
 
     path('course_enrollment/', views.course_enrollment, name='course_enrollment'),
     path('enroll_course/<int:course_id>/', views.enroll_course, name='enroll_course'),
     path('course_feedback/<int:course_id>/', views.course_feedback, name='course_feedback'),
+    path('mark_student_notification_as_read/<int:notification_id>/', views.mark_student_notification_as_read, name='mark_student_notification_as_read'),
 
     path('course_materials/<int:course_id>/', views.course_materials, name='course_materials'),
     
@@ -30,7 +33,8 @@ urlpatterns = [
     path('api/teacher/<int:pk>/', api.TeacherDetails.as_view(), name='teacher_api'),
     path('api/course/<int:pk>/', api.CourseDetails.as_view(), name='course_api'),
 
+    path('search/', views.search, name='search'), 
+    
     path('chat/', views.chat, name='chat'),
     path('chat/<str:room_name>/', views.room, name='room'),
 ]
-
