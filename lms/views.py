@@ -504,22 +504,19 @@ def course_feedback(request, course_id):
     student = Student.objects.get(app_user=app_user)
     course = Course.objects.get(id=course_id)
 
+    # Get or create the feedback entry
     feedback_entry, created = Course_Student.objects.get_or_create(course=course, student=student)
+
     if request.method == 'POST':
         feedback_entry.student_feedback = request.POST.get('feedback')
         feedback_entry.save()
-        return redirect('index')
-
-    student_unread_notifications = StudentNotification.objects.filter(student=student, is_read=False)
+        messages.success(request, "Your feedback has been updated!")
+        return redirect('course_feedback', course_id=course_id)
 
     return render(request, 'lms/course_feedback.html', {
         'course': course,
-        'feedback': feedback_entry.student_feedback,
-        'account_type': 'S',
-        'student_unread_notifications': student_unread_notifications
+        'existing_feedback': feedback_entry.student_feedback if feedback_entry.student_feedback else ''
     })
-
-
 
 
 @login_required

@@ -1,13 +1,19 @@
 import json
-
+import re
 from channels.generic.websocket import AsyncWebsocketConsumer
-
+from urllib.parse import unquote
 from django.contrib.auth.models import AnonymousUser
 from .models import Notification, Teacher, AppUser, StudentNotification
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        # Decode URL encoding
+        raw_room_name = unquote(self.scope["url_route"]["kwargs"]["room_name"])
+
+        # Sanitize room name: Allow only letters, numbers, hyphens, underscores, and periods
+        self.room_name = re.sub(r"[^a-zA-Z0-9\-_\.]", "", raw_room_name)
+        
+        # Generate a valid group name
         self.room_group_name = f"chat_{self.room_name}"
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
@@ -19,15 +25,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
-        username = text_data_json["username"]
-        timestamp = text_data_json["timestamp"]
+        username = text_data_json.get("username", "Anonymous")
+        timestamp = text_data_json.get("timestamp", "")
 
         await self.channel_layer.group_send(
-            self.room_group_name, {
+            self.room_group_name,
+            {
                 "type": "chat_message",
                 "message": message,
                 "username": username,
-                "timestamp": timestamp
+                "timestamp": timestamp,
             }
         )
 
@@ -41,6 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "username": username,
             "timestamp": timestamp
         }))
+
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):

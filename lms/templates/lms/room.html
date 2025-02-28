@@ -32,7 +32,7 @@
 
     /* Chat box (message display area) */
     .chat-box {
-        height: 400px;
+        height: 350px;
         overflow-y: auto;
         border: 1px solid #ccc;
         padding: 10px;
@@ -85,15 +85,10 @@
 </style>
 
 <script>
-    const roomName = JSON.parse(document.getElementById('room-name').textContent);
-    const username = JSON.parse(document.getElementById('username').textContent);
+    const roomName = encodeURIComponent(JSON.parse(document.getElementById('room-name').textContent));
 
     const chatSocket = new WebSocket(
-        'ws://'
-        + window.location.host
-        + '/ws/chat/'
-        + roomName
-        + '/'
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
     );
 
     chatSocket.onmessage = function(e) {
@@ -103,21 +98,19 @@
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
 
-        // Differentiate between user and other messages
-        if (data.username === username) {
+        if (data.username === "{{ user.username }}") {
             messageDiv.classList.add('user');
         } else {
             messageDiv.classList.add('other');
         }
 
-        // Add username, timestamp, and message text
         messageDiv.innerHTML = `
             <div class="meta">${data.username} • ${data.timestamp}</div>
             <div class="message-text">${data.message}</div>
         `;
 
         chatLog.appendChild(messageDiv);
-        chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll
+        chatLog.scrollTop = chatLog.scrollHeight;
     };
 
     chatSocket.onclose = function(e) {
@@ -131,7 +124,7 @@
         if (message) {
             chatSocket.send(JSON.stringify({
                 'message': message,
-                'username': username,
+                'username': "{{ user.username }}",
                 'timestamp': new Date().toLocaleTimeString()
             }));
             messageInputDom.value = '';
@@ -139,9 +132,10 @@
     };
 
     document.querySelector('#chat-message-input').onkeyup = function(e) {
-        if (e.keyCode === 13) {  // Enter key
+        if (e.keyCode === 13) {
             document.querySelector('#chat-message-submit').click();
         }
     };
 </script>
+
 {% endblock %}

@@ -19,6 +19,17 @@
                     <div id="status{{ enrollment.student.id }}" class="collapse mt-2">
                         <p class="text-muted">{{ enrollment.student.status }}</p>
                     </div>
+                    <!-- Show Feedback Button -->
+                    <button class="btn btn-link text-info" data-bs-toggle="collapse" data-bs-target="#feedback{{ enrollment.student.id }}">
+                        Show Feedback
+                    </button>
+                    <div id="feedback{{ enrollment.student.id }}" class="collapse mt-2">
+                        {% if enrollment.student_feedback %}
+                            <p class="text-muted">{{ enrollment.student_feedback }}</p>
+                        {% else %}
+                            <p class="text-muted">No feedback provided.</p>
+                        {% endif %}
+                    </div>
                 </div>
                 <div>
                     <button class="btn btn-danger btn-sm remove-btn" data-student-id="{{ enrollment.student.id }}" data-course-id="{{ course.id }}">Remove</button>

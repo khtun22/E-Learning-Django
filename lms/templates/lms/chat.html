@@ -2,19 +2,42 @@
 {% load django_bootstrap5 %}
 
 {% block title %}Chat{% endblock %}
-{% block content %}
-    Which subject chat room would you like to enter?<br>
-    <select class="form-select" id="room-name-select" name="room_name">
-        {% for room in chat_rooms %}
-            <option value="{{ room }}">{{ room }}</option>
-        {% endfor %}
-    </select><br>
-    <button id="room-name-submit" type="button" class="btn btn-primary">Enter</button>
 
-    <script>
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-select').value;
-            window.location.pathname = '/chat/' + roomName + '/';
-        };
-    </script>
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-sm p-4" style="max-width: 500px; width: 100%;">
+        <h4 class="text-center mb-3">Select a Chat Room</h4>
+        <p class="text-center text-muted">Which subject chat room would you like to enter?</p>
+        
+        <div class="mb-3">
+            <select class="form-select" id="room-name-select" name="room_name">
+                {% for room in chat_rooms %}
+                    <option value="{{ room }}">{{ room }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="d-grid">
+            <button id="room-name-submit" type="button" class="btn btn-primary">Enter Chat</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelector('#room-name-submit').onclick = function(e) {
+        var roomName = document.querySelector('#room-name-select').value;
+        window.location.pathname = '/chat/' + encodeURIComponent(roomName) + '/';
+    };
+</script>
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    .container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+    }
+</style>
 {% endblock %}

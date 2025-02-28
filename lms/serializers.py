@@ -21,7 +21,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['courseid', 'name', 'description', 'startdate', 'teacher_name']
+        fields = ['id', 'name', 'description', 'startdate', 'teacher_name']
 
     def get_teacher_name(self, obj):
         return obj.teacher.display_name

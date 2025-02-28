@@ -12,7 +12,7 @@
         <div class="mb-3">
             <label for="feedback" class="form-label">Your Feedback:</label>
             <textarea id="feedback" name="feedback" class="form-control" rows="4"
-                      placeholder="Enter your feedback here...">{% if existing_feedback %}{{ existing_feedback }}{% endif %}</textarea>
+                      placeholder="Enter your feedback here...">{{ existing_feedback }}</textarea>
         </div>
         {% bootstrap_button button_type="submit" content="Update Feedback" %}
     </form>
