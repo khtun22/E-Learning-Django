@@ -265,6 +265,43 @@
               attachMarkReadEvents();
           }
       });
+      document.addEventListener("DOMContentLoaded", function () {
+        function attachMarkReadEvents() {
+            document.querySelectorAll(".mark-read").forEach(button => {
+                button.onclick = function () {
+                    const notificationId = this.dataset.id;
+                    const url = this.dataset.url;
+
+                    fetch(url, { method: "POST", headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                this.parentElement.remove();
+                                updateNotificationBadge();
+                            }
+                        })
+                        .catch(error => console.error("Error marking notification as read:", error));
+                };
+            });
+        }
+
+        function updateNotificationBadge() {
+            const studentBadge = document.getElementById("student-notification-badge");
+            const teacherBadge = document.getElementById("notification-badge");
+
+            if (studentBadge) {
+                let count = document.querySelectorAll("#student-notification-list .dropdown-item").length;
+                studentBadge.innerText = count > 0 ? count : "";
+            }
+
+            if (teacherBadge) {
+                let count = document.querySelectorAll("#notification-list .dropdown-item").length;
+                teacherBadge.innerText = count > 0 ? count : "";
+            }
+        }
+
+        attachMarkReadEvents();
+    });
       </script>
       
       

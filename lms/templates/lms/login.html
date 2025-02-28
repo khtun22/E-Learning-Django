@@ -2,22 +2,56 @@
 {% load django_bootstrap5 %}
 
 {% block title %}Login{% endblock %}
+
 {% block content %}
-<p class="h2">Login</p>
-<form id="login_form" action="/accounts/login/" method="post" class="form">
-    {% csrf_token %}
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+        <h2 class="text-center mb-4">Login</h2>
 
-    {% if message %}
-    <p style="color: red;">{{ message }}</p>
-    {% endif %}
+        {% if message %}
+        <div class="alert alert-danger text-center">
+            {{ message }}
+        </div>
+        {% endif %}
 
-    <p>Username: <input type="text" name="username" value="" size="50" /></p>
-    <p>Password: <input type="password" name="password" value="" size="50" /></p>
+        <form id="login_form" action="/accounts/login/" method="post">
+            {% csrf_token %}
 
-    {% bootstrap_button button_type="submit" content="Submit" %}
-</form>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" name="username" class="form-control" id="username" placeholder="Enter username" required>
+                </div>
+            </div>
 
-<br />
-<br />
-<p>Not a user? <a href="/register/">Create new account</a></p>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" name="password" class="form-control" id="password" placeholder="Enter password" required>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                {% bootstrap_button button_type="submit" content="Login" %}
+            </div>
+        </form>
+
+        <p class="text-center mt-3">Not a user? <a href="/register/">Create an account</a></p>
+    </div>
+</div>
+
+<!-- Font Awesome for icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<style>
+    body {
+        background: #f8f9fa;
+    }
+    .card {
+        border-radius: 10px;
+        background: white;
+    }
+</style>
 {% endblock %}

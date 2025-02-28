@@ -1,20 +1,68 @@
-{% extends './base.html' %}
+{% extends "./base.html" %}
 {% load django_bootstrap5 %}
 
-{% block title %}Account Creation{% endblock %}
+{% block title %}Register{% endblock %}
+
 {% block content %}
-        <p class="h2">Create Account</p>
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%;">
+        <h2 class="text-center mb-4">Create Account</h2>
 
         {% if registered %}
-        <p>Account Created.&nbsp;<a href="/accounts/login/">Login</a></p>
+        <div class="alert alert-success text-center">
+            Account Created! <a href="/accounts/login/">Login here</a>.
+        </div>
         {% else %}
-        <form action="/register/" method="post" enctype="multipart/form-data" class="form">
+        <form action="/register/" method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            {{ user_form.as_p }}
-            {{ role_form.as_p}}
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Choose a username" required>
+            </div>
 
-            {% bootstrap_button button_type="submit" content="Register" %}
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Create a password" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" name="first_name" class="form-control" placeholder="Enter your first name" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="last_name" class="form-control" placeholder="Enter your last name" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Account Type</label>
+                {{ role_form.account_type }}
+            </div>
+
+            <div class="d-grid">
+                {% bootstrap_button button_type="submit" content="Register" %}
+            </div>
         </form>
+
+        <p class="text-center mt-3">Already have an account? <a href="/accounts/login/">Login here</a></p>
         {% endif %}
+    </div>
+</div>
+
+<style>
+    body {
+        background: #f8f9fa;
+    }
+    .card {
+        border-radius: 10px;
+        background: white;
+    }
+</style>
 {% endblock %}

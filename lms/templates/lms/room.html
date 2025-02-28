@@ -1,48 +1,147 @@
-<!-- chat room page -->
 {% extends "./base.html" %}
 {% load django_bootstrap5 %}
 
 {% block title %}Chat{% endblock %}
 {% block content %}
-    <p class="h1">Chat room for {{ room_name }}</p>
-    <textarea class="form-control" id="chat-log" cols="100" rows="20"></textarea><br>
-    <input class="form-control" id="chat-message-input" type="text" size="100"><br>
-    <button id="chat-message-submit" type="button" class="btn btn-primary">Send</button>
+<div class="container">
+    <h1 class="text-center">Chat Room: {{ room_name }}</h1>
+    
+    <div id="chat-container">
+        <div id="chat-log" class="chat-box"></div> <!-- Chat messages will be shown here -->
+        
+        <div class="chat-input-box">
+            <input class="form-control" id="chat-message-input" type="text" placeholder="Type a message..." />
+            <button id="chat-message-submit" class="btn btn-primary">Send</button>
+        </div>
+    </div>
+
     {{ room_name|json_script:"room-name" }}
-    <script>
-        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    {{ user.username|json_script:"username" }}
+</div>
 
-        const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/chat/'
-            + roomName
-            + '/'
-        );
+<style>
+    /* Chat container */
+    #chat-container {
+        max-width: 700px;
+        margin: auto;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
 
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
-        };
+    /* Chat box (message display area) */
+    .chat-box {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+    }
 
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
+    /* Message bubbles */
+    .message {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+        padding: 8px;
+        border-radius: 8px;
+        max-width: 100%;
+    }
 
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
+    /* User message (align right) */
+    .message.user {
+        align-self: flex-end;
+        background: #e9ecef;
+        color: black;
+        text-align: right;
+    }
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
+    /* Other users’ messages (align left) */
+    .message.other {
+        align-self: flex-start;
+        background: #e9ecef;
+        color: black;
+    }
+
+    /* Username and timestamp */
+    .message .meta {
+        font-size: 12px;
+        color: gray;
+        margin-bottom: 3px;
+    }
+
+    /* Input box styling */
+    .chat-input-box {
+        display: flex;
+        margin-top: 10px;
+        gap: 10px;
+    }
+
+    .chat-input-box input {
+        flex: 1;
+    }
+</style>
+
+<script>
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const username = JSON.parse(document.getElementById('username').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.querySelector('#chat-log');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+
+        // Differentiate between user and other messages
+        if (data.username === username) {
+            messageDiv.classList.add('user');
+        } else {
+            messageDiv.classList.add('other');
+        }
+
+        // Add username, timestamp, and message text
+        messageDiv.innerHTML = `
+            <div class="meta">${data.username} • ${data.timestamp}</div>
+            <div class="message-text">${data.message}</div>
+        `;
+
+        chatLog.appendChild(messageDiv);
+        chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value.trim();
+
+        if (message) {
             chatSocket.send(JSON.stringify({
-                'message': message
+                'message': message,
+                'username': username,
+                'timestamp': new Date().toLocaleTimeString()
             }));
             messageInputDom.value = '';
-        };
-    </script>
+        }
+    };
+
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // Enter key
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+</script>
 {% endblock %}

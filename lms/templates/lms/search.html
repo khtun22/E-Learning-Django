@@ -26,42 +26,42 @@
 
     {% if search_type == "student" %}
         <h5>Students</h5>
-        <div class="row">
+        <ul class="list-group">
             {% for student in students %}
-                <div class="col-md-4 d-flex align-items-center mb-3">
+                <li class="list-group-item d-flex align-items-center">
                     <img src="{% if student.photo %}{{ student.photo.url }}{% else %}{% static 'lms/profile_pics/default-profile.png' %}{% endif %}" 
-                         class="rounded-circle me-3" width="60" height="60" alt="Student Profile">
+                         class="rounded-circle me-3" width="40" height="40" alt="Student Profile">
                     <div>
                         <p class="mb-0"><strong>{{ student.display_name }}</strong></p>
                         {% if student.status %}
-                            <p class="text-muted small">{{ student.status }}</p>
+                            <p class="text-muted small mb-0">{{ student.status }}</p>
                         {% endif %}
                     </div>
-                </div>
+                </li>
             {% empty %}
                 <p class="text-muted">No students found.</p>
             {% endfor %}
-        </div>
+        </ul>
     {% endif %}
 
     {% if search_type == "teacher" %}
         <h5>Teachers</h5>
-        <div class="row">
+        <ul class="list-group">
             {% for teacher in teachers %}
-                <div class="col-md-4 d-flex align-items-center mb-3">
+                <li class="list-group-item d-flex align-items-center">
                     <img src="{% if teacher.photo %}{{ teacher.photo.url }}{% else %}{% static 'lms/profile_pics/default-profile.png' %}{% endif %}" 
-                         class="rounded-circle me-3" width="60" height="60" alt="Teacher Profile">
+                         class="rounded-circle me-3" width="40" height="40" alt="Teacher Profile">
                     <div>
                         <p class="mb-0"><strong>{{ teacher.display_name }}</strong></p>
                         {% if teacher.bio %}
-                            <p class="text-muted small">{{ teacher.bio }}</p>
+                            <p class="text-muted small mb-0">{{ teacher.bio }}</p>
                         {% endif %}
                     </div>
-                </div>
+                </li>
             {% empty %}
                 <p class="text-muted">No teachers found.</p>
             {% endfor %}
-        </div>
+        </ul>
     {% endif %}
 </div>
 {% endblock %}

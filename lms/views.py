@@ -11,14 +11,13 @@ from asgiref.sync import async_to_sync
 import json
 from django.db import connection
 from django.contrib import messages
-
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 # application home page
 
 @login_required
 def index(request):
     user = request.user
-
     try:
         app_user = AppUser.objects.get(user=user)
     except AppUser.DoesNotExist:
@@ -29,6 +28,7 @@ def index(request):
 
         if account_type == 'S':
             profile = Student.objects.get(app_user=app_user)
+            display_name = profile.display_name
             enrolled_courses = Course.objects.filter(
                 course_student__student=profile,
                 course_student__blocked=False
@@ -40,6 +40,7 @@ def index(request):
             taught_courses = None
         elif account_type == 'T':
             profile = Teacher.objects.get(app_user=app_user)
+            display_name = profile.display_name
             taught_courses = Course.objects.filter(teacher=profile)
             enrolled_courses = None
 
@@ -51,6 +52,7 @@ def index(request):
 
         return render(request, 'lms/index.html', {
             'user': user,
+            'display_name': display_name,
             'account_type': account_type,
             'enrolled_courses': enrolled_courses,
             'taught_courses': taught_courses,
@@ -152,6 +154,7 @@ def student_profile(request):
         form = StudentForm(request.POST, request.FILES, instance=student)
         if form.is_valid():
             form.save()
+            messages.success(request, "Your profile has been successfully updated!")
             return redirect('student_profile')
 
     return render(request, 'lms/student_profile.html', {
@@ -182,6 +185,7 @@ def teacher_profile(request):
         form = TeacherForm(request.POST, request.FILES, instance=teacher)
         if form.is_valid():
             form.save()
+            messages.success(request, "Your profile has been successfully updated!")
             return redirect('teacher_profile')
 
     return render(request, 'lms/teacher_profile.html', {
@@ -194,43 +198,77 @@ def teacher_profile(request):
 
 # chat room selection page
 @login_required
+@login_required
 def chat(request):
-    # get the logged in user
     user = request.user
     app_user = AppUser.objects.get(user=user)
     account_type = app_user.account_type
 
-    # Get the courses enrolled/taught by the user
-    # Each course has its own chat room
+    student_unread_notifications = []
+    unread_notifications = []
+
     if account_type == 'S':
-        # list of courses that student has enrolled to
         student = Student.objects.get(app_user=app_user)
-        courses = student.course_set.all()
-        course_list = courses.values_list('name', flat=True)
-            
-    if account_type == 'T':
-        # list of course that teacher is teaching
-        teacher = Teacher.objects.get(app_user=app_user)
-        courses = teacher.course_set.all()
+        courses = Course.objects.filter(course_student__student=student)
         course_list = courses.values_list('name', flat=True)
 
-    # Add a General chat room to the list
+        # Fetch unread notifications for students
+        student_unread_notifications = StudentNotification.objects.filter(student=student, is_read=False)
+
+    elif account_type == 'T':
+        teacher = Teacher.objects.get(app_user=app_user)
+        courses = Course.objects.filter(teacher=teacher)
+        course_list = courses.values_list('name', flat=True)
+
+        # Fetch unread notifications for teachers
+        unread_notifications = Notification.objects.filter(teacher=teacher, is_read=False)
+
+    else:
+        course_list = []
+
     chat_rooms = list(course_list)
     chat_rooms.insert(0, 'General')
 
-    return render(request, 'lms/chat.html',
-                  {'user': user, 'account_type': account_type, 'chat_rooms': chat_rooms})
+    return render(request, 'lms/chat.html', {
+        'user': user,
+        'account_type': account_type,
+        'chat_rooms': chat_rooms,
+        'student_unread_notifications': student_unread_notifications if account_type == 'S' else None,
+        'unread_notifications': unread_notifications if account_type == 'T' else None
+    })
+
+
 
 # chat room page
 @login_required
 def room(request, room_name):
-    # get the logged in user
     user = request.user
     app_user = AppUser.objects.get(user=user)
     account_type = app_user.account_type
 
-    return render(request, 'lms/room.html',
-                  {'user': user, 'account_type': account_type, 'room_name': room_name })
+    student_unread_notifications = []
+    unread_notifications = []
+
+    if account_type == 'S':
+        student = Student.objects.get(app_user=app_user)
+
+        # Fetch unread notifications for students
+        student_unread_notifications = StudentNotification.objects.filter(student=student, is_read=False)
+
+    elif account_type == 'T':
+        teacher = Teacher.objects.get(app_user=app_user)
+
+        # Fetch unread notifications for teachers
+        unread_notifications = Notification.objects.filter(teacher=teacher, is_read=False)
+
+    return render(request, 'lms/room.html', {
+        'user': user,
+        'account_type': account_type,
+        'room_name': room_name,
+        'student_unread_notifications': student_unread_notifications if account_type == 'S' else None,
+        'unread_notifications': unread_notifications if account_type == 'T' else None
+    })
+
 
 @login_required
 def create_course(request):
@@ -317,6 +355,20 @@ def add_material(request, course_id):
         'account_type': 'T',
         'unread_notifications': unread_notifications
     })
+
+@login_required
+def delete_material(request, material_id):
+    if request.method == "POST":
+        material = get_object_or_404(Course_Material, id=material_id)
+        
+        # Only allow the teacher who uploaded the material to delete it
+        if material.course.teacher.app_user.user != request.user:
+            return JsonResponse({"success": False, "error": "Unauthorized"}, status=403)
+
+        material.delete()
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 @login_required
 def course_enrollment(request):
@@ -522,7 +574,7 @@ def mark_notification_as_read(request, notification_id):
     app_user = AppUser.objects.get(user=user)
 
     if app_user.account_type != 'T':
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
     try:
         notification = Notification.objects.get(id=notification_id, teacher__app_user=app_user)
@@ -533,7 +585,7 @@ def mark_notification_as_read(request, notification_id):
 
     connection.close()  # Force database connection to close
 
-    return HttpResponseRedirect('/')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 @login_required
 def mark_student_notification_as_read(request, notification_id):
@@ -541,7 +593,7 @@ def mark_student_notification_as_read(request, notification_id):
     app_user = AppUser.objects.get(user=user)
 
     if app_user.account_type != 'S':
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
     try:
         notification = StudentNotification.objects.get(id=notification_id, student__app_user=app_user)
@@ -551,7 +603,7 @@ def mark_student_notification_as_read(request, notification_id):
         pass
 
     connection.close()  # Prevents database lock error
-    return HttpResponseRedirect('/')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 @login_required
 def search(request):
@@ -561,14 +613,16 @@ def search(request):
     teachers = []
     student_unread_notifications = []
     unread_notifications = []
+    account_type = ""
 
     # Retrieve user and notifications
     app_user = AppUser.objects.get(user=request.user)
+    account_type = app_user.account_type
     
-    if app_user.account_type == 'S':
+    if account_type == 'S':
         student_unread_notifications = StudentNotification.objects.filter(student__app_user=app_user, is_read=False)
     
-    if app_user.account_type == 'T':
+    if account_type == 'T':
         teacher = Teacher.objects.get(app_user=app_user)
         unread_notifications = Notification.objects.filter(teacher=teacher, is_read=False)
 
@@ -585,7 +639,7 @@ def search(request):
                        teachers.filter(bio__icontains=query)
 
         # Exclude the logged-in teacher from the results
-        if app_user.account_type == 'T':
+        if account_type == 'T':
             teachers = teachers.exclude(app_user=app_user)
 
     return render(request, 'lms/search.html', {
@@ -594,6 +648,7 @@ def search(request):
         'students': students,
         'teachers': teachers,
         'student_unread_notifications': student_unread_notifications,
-        'unread_notifications': unread_notifications
+        'unread_notifications': unread_notifications,
+        'account_type': account_type  # Ensure account type is passed
     })
 
