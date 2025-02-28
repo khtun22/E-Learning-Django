@@ -1,8 +1,8 @@
-from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-
+import os
 from datetime import datetime
 from .models import *
 from .forms import *
@@ -11,8 +11,8 @@ from asgiref.sync import async_to_sync
 import json
 from django.db import connection
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+from django.conf import settings
+from django.core.files.storage import default_storage
 # application home page
 
 @login_required
@@ -356,16 +356,28 @@ def add_material(request, course_id):
         'unread_notifications': unread_notifications
     })
 
-@login_required
 def delete_material(request, material_id):
     if request.method == "POST":
         material = get_object_or_404(Course_Material, id=material_id)
-        
+
         # Only allow the teacher who uploaded the material to delete it
         if material.course.teacher.app_user.user != request.user:
             return JsonResponse({"success": False, "error": "Unauthorized"}, status=403)
 
+        # Get file path (use `path` instead of `url`)
+        file_path = material.file.path  # Absolute path
+
+        # Delete the database record first
         material.delete()
+
+        # Check if file exists and delete it safely
+        if file_path and default_storage.exists(file_path):
+            try:
+                os.remove(file_path)  # Remove the file from the storage
+                print(f"Deleted file: {file_path}")  # Debugging log
+            except Exception as e:
+                print(f"Error deleting file: {e}")  # Log any error
+
         return JsonResponse({"success": True})
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
